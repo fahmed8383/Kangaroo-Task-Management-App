@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+*{
+    padding: 0;
+    margin: 0;
+}
+.paralax{
+    background: linear-gradient(
+        rgba(0, 0, 0, 0.6), 
+        rgba(0, 0, 0, 0.6)
+      ), 
+      url('../../assets/images/home.jpg');
+    height: 100vh;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.titlecontent{
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+    padding-top: 40vh;
+    color: white;
+}
+
+.titlecontent h1{
+    position: relative;
+    font-family: 'Lobster', cursive;
+    font-size: 7vw;
+    animation-name: kangaroo;
+    animation-duration: 2.5s;
+}
+
+.titlecontent h2{
+    padding-top: 20px;
+    font-size: 2vw;
+}
+
+.features{
+    padding-top: 30px;
+    background-color: #f7f7f7;
+}
+
+.features h1{
+    font-size: 3vw;
+    text-align: center;
+}
+
+@media (max-width: 1000px){
+    .titlecontent h1{
+        font-size: 17vw;
+    }
+    
+    .titlecontent h2{
+        font-size: 7vw;
+    }
+
+    .features h1{
+        font-size: 10vw;
+    }
+}
+
+@keyframes kangaroo {
+    0%   {left:-100vw; top:0px;}
+    80%  {left: 0px; top: 0px;}
+    98%  {left: 0px; top: -20vh;}
+    100% {left: 0px; top: 0px;}
+}

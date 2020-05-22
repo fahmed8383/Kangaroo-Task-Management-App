@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
+
+* {
+  box-sizing: border-box;
+  border: 0;
+  padding: 0;
+  font-family: "Open Sans", sans-serif;
+}
+
+html{
+  margin: 0px;
+}
+
+body{
+  margin: 0px;
+}
+
+hr{
+  color: #FFFFFFE5;
+  border: 2px #FFFFFFE5 solid;
+}
+
+.modal {
+  position: fixed;
+  z-index: 2;
+  padding-top: 15vh;
+  left: 0;
+  top: 0;
+  overflow: auto;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modalContent {
+  position: relative;
+  background-color: #f5f5f5;
+  margin: auto;
+  padding: 0;
+  width: 700px;
+  max-width: 90%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.5),0 6px 20px 0 rgba(0,0,0,0.5);
+  border-radius: 10px;
+  animation-name: bounce;
+  animation-duration: 1s;
+}
+
+
+.close {
+  color: white;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modalHeader {
+  padding: 2px 16px;
+  background-color: #6666ff;
+  color: white;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.modalBody {
+  padding: 20px 0px;
+  padding-bottom: 5px;
+}
+
+.modalFooter {
+  padding: 10px 5%;
+  background-color: #6666ff;
+  color: white;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.form1{
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form1 input{
+  box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	border: 1px solid #C2C2C2;
+	box-shadow: 1px 1px 4px #EBEBEB;
+	-moz-box-shadow: 1px 1px 4px #EBEBEB;
+	-webkit-box-shadow: 1px 1px 4px #EBEBEB;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+  padding: 7px;
+  width: 100%;
+  outline: none;
+  margin-bottom: 15px;
+}
+
+.form1 input:focus{
+  border: 1px solid #0C0;
+}
+
+.button1{
+  padding: 8px 30px;
+  background-color: transparent;
+  border: 1px solid #E8E8E8;
+  cursor: pointer;
+  margin-left: 5px;
+  border-radius: 10px;
+  transition: all 0.3s ease 0s;
+}
+
+.button1:hover{
+  border-color: #FFFFFF;
+  color: #FFFFFF;
+}
+
+@keyframes bounce {
+  0%   {top: -100vh;}
+  30%  {top: 0vh;}
+  60%  {top: -5vh;}
+  100% {top: 0vh;}
+}

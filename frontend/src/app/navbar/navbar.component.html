@@ -1,0 +1,64 @@
+<!--color goes from transparent to blue if mobile nav dropdown is clicked or a certain scroll threshold is met-->
+<div [style.background-color] = "(!navbarTransparent||showMobileNav) ? '#6666ff' : 'transparent' " class="navbar">
+    <div class="navContainer">
+        <p class="navLogo">Kangaroo</p>
+
+        <!--change the class to nav-inactive if mobile nav has not been clicked yet (this will hide the dropdown). The nav-active class is only defined in the mobile viewport-->
+        <nav [ngClass]="showMobileNav? 'nav-active' : ''">
+        <ul class="navbarLinks">
+            <li>
+                <a href="# ">Home</a>
+            </li>
+            <li>
+                <a href="# ">Features</a>
+            </li>
+            <li>
+                <a href="# ">About</a>
+            </li>
+
+            <!--only visible in mobile-->
+            <li class="navButtonMobileLi">
+                <a (click) = "openRegModal(); mobileNavClick();" class="navButton" style="background-color: #7957d5;">Register</a>
+                <a class="navButton" style="background-color: #f5f5f5; color: black;">Login</a>
+            </li>
+        </ul>
+        </nav>
+        <div class="mobileMenu" id="mobileMenu">
+
+        <!--change icon depending on whether the mobile nav has been clicked or not-->
+        <fa-icon *ngIf="showMobileNav" (click)= "mobileNavClick()" [icon]="faTimes"></fa-icon>
+        <fa-icon *ngIf="!showMobileNav" (click)= "mobileNavClick()" [icon]="faBars"></fa-icon>
+        </div>
+
+        <!--display:none in mobile, only visible in browser-->
+        <div class="navButtonDiv">
+            <button (click) = "openRegModal()" class="navButton" style="background-color: #7957d5;">Register</button>
+            <button class="navButton" style="background-color: #f5f5f5; color: black;">Login</button>
+        </div>
+    </div>
+</div>
+
+<!--registration form only added to dom when the variable for rendering it is true (modal is open)-->
+<div *ngIf = "displayRegModal" (click) = "closeRegModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeRegModal($event)" class="close">&times;</span>
+            <h2>Create An Account</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <label>User Name:</label><br> 
+                <input type="text" [(ngModel)] = "regInfo.userName"><br>
+                <label>Email:</label><br> 
+                <input type="text" [(ngModel)] = "regInfo.email"><br>
+                <label>Password:</label><br> 
+                <input type="password" [(ngModel)] = "regInfo.password"><br>
+                <label>Confirm Password:</label><br> 
+                <input type="password" [(ngModel)] = "regInfo.confirmPassword"><br>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "sendEmailVerification()" class="button1">Submit</button>
+        </div>
+    </div>
+</div>

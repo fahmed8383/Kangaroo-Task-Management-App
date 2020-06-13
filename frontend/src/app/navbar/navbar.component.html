@@ -19,7 +19,7 @@
             <!--only visible in mobile-->
             <li class="navButtonMobileLi">
                 <a (click) = "openRegModal(); mobileNavClick();" class="navButton" style="background-color: #7957d5;">Register</a>
-                <a class="navButton" style="background-color: #f5f5f5; color: black;">Login</a>
+                <a (click) = "openLoginModal(); mobileNavClick();" class="navButton" style="background-color: #f5f5f5; color: black;">Login</a>
             </li>
         </ul>
         </nav>
@@ -33,13 +33,13 @@
         <!--display:none in mobile, only visible in browser-->
         <div class="navButtonDiv">
             <button (click) = "openRegModal()" class="navButton" style="background-color: #7957d5;">Register</button>
-            <button class="navButton" style="background-color: #f5f5f5; color: black;">Login</button>
+            <button (click) = "openLoginModal()" class="navButton" style="background-color: #f5f5f5; color: black;">Login</button>
         </div>
     </div>
 </div>
 
-<!--registration form only added to dom when the variable for rendering it is true (modal is open)-->
-<div *ngIf = "displayRegModal" (click) = "closeRegModal($event)" class="modal">
+<!--registration form is hidden instead of removed from DOM, this is because of an error with the google recaptcha that occurs when this item is removed from DOM-->
+<div [hidden] = "!displayRegModal" (click) = "closeRegModal($event)" class="modal">
     <div class="modalContent">
         <div class="modalHeader">
             <span (click) = "closeRegModal($event)" class="close">&times;</span>
@@ -48,17 +48,79 @@
         <div class="modalBody">
             <div class="form1">
                 <label>User Name:</label><br> 
-                <input type="text" [(ngModel)] = "regInfo.userName"><br>
+                <input type="text" (focusout) = "checkUsernameAvailability()" [(ngModel)] = "regInfo.userName"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.userName==''">This field is required</p>
+                <p class="dangerText" *ngIf = "!usernameAvailability">This username is already taken, please choose another</p>
                 <label>Email:</label><br> 
-                <input type="text" [(ngModel)] = "regInfo.email"><br>
+                <input type="email" (focusout) = "checkEmailAvailability()" [(ngModel)] = "regInfo.email"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.email==''">This field is required</p>
+                <p class="dangerText" *ngIf = "regErr == 'invalid email'">Please enter a valid email address</p>
+                <p class="dangerText" *ngIf = "!emailAvailability">There is already an account registered under this email. Please log in.</p>
                 <label>Password:</label><br> 
                 <input type="password" [(ngModel)] = "regInfo.password"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.password==''">This field is required</p>
                 <label>Confirm Password:</label><br> 
                 <input type="password" [(ngModel)] = "regInfo.confirmPassword"><br>
+                <p class="dangerText" *ngIf = "regInfo.confirmPassword!=regInfo.password">Passwords do not match</p>
+
+                <!--add google captcha, validated in the backend-->
+                <div class="captcha"><re-captcha [(ngModel)]="regInfo.captcha" siteKey="6Lemkv0UAAAAAEC7_tzjFjD4icTFhiRL_fbYd0Po"></re-captcha></div>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.captcha==''">This field is required</p>
             </div>
         </div>
         <div class="modalFooter">
-            <button (click) = "sendEmailVerification()" class="button1">Submit</button>
+            <button (click) = "sendEmailVerification()" class="button1">Next</button>
+        </div>
+    </div>
+</div>
+
+<!--verification form only added to DOM when the variable for rendering it is true (modal is open)-->
+<div *ngIf = "displayVerificationModal" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <h2>Verify Email</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <p class="infoText">Since the only means of account recovery is through your email. Please confirm your email before proceeding. Closing this modal will cancel your registration. <br><br> Please enter the code sent to your email below</p>
+                <label>Email:</label><br> 
+                <input type="email" (focusout) = "checkEmailAvailability()" [(ngModel)] = "regInfo.email"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.email==''">This field is required</p>
+                <p class="dangerText" *ngIf = "regErr == 'invalid email'">Please enter a valid email address</p>
+                <p class="dangerText" *ngIf = "!emailAvailability">There is already an account registered under this email. Please log in.</p>
+                <button (click) = "resendEmailVerification()" class="button2">Re-send Code</button><br>
+                <label>Validation Code:</label>
+                <input type="text" [(ngModel)] = "regInfo.verificationCode"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.verificationCode==''">This field is required</p>
+                <p class="dangerText" *ngIf = "regErr == 'invalid authorization code'">The entered verification code is incorrect</p>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "closeVerificationModal()" class="button1">Cancel</button>
+            <button (click) = "validateVerificationCode()" class="button1">Submit</button>
+        </div>
+    </div>
+</div>
+
+<!--login form only added to DOM when the variable for rendering it is true (modal is open)-->
+<div *ngIf = "displayLoginModal" (click) = "closeLoginModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeLoginModal($event)" class="close">&times;</span>
+            <h2>Login</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <label>Username:</label><br> 
+                <input type="text" [(ngModel)] = "regInfo.userName"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.userName==''">This field is required</p>
+                <label>Password:</label><br> 
+                <input type="password" [(ngModel)] = "regInfo.password"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.password==''">This field is required</p>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "login()" class="button1">Login</button>
         </div>
     </div>
 </div>

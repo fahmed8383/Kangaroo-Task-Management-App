@@ -1,6 +1,25 @@
-version: "3.7"
+# This is a developement only file, production has a seperate docker compose which is not visible on github
+version: "3.8"
 
 services:
+
+  api:
+    build:
+      context: ./backend
+      args:
+        service: api
+    image: api
+    container_name: api
+    depends_on:
+      - postgresql
+    expose:
+      - 6060
+    volumes:
+      - ./backend/secrets.json:/secrets.json
+    restart: unless-stopped
+    networks:
+      - docker
+
   nginx:
     image: nginx:alpine
     container_name: nginx
@@ -13,19 +32,48 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./frontend/dist/frontend:/usr/share/nginx/html
+  
+  postgresql:
+    image: postgres:alpine
+    container_name: postgresql
+    restart: unless-stopped
 
-  api:
-    build:
-      context: ./backend
-      args:
-        service: api
-    image: api
-    container_name: api
+    # These credentials are only for the dev environment, the production environment will have different
+    # credentials that are not visible in this repo
+    environment:
+      POSTGRES_DB: postgresql
+      POSTGRES_USER: devenv
+      POSTGRES_PASSWORD: test
+      PGDATA: /postgresql
+    expose:
+      - 5432
+    volumes:
+       - postgresql:/postgresql
     networks:
       - docker
-    expose:
-      - 6060
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
     restart: unless-stopped
+    depends_on:
+      - postgresql
+    
+    # These credentials are only for the dev environment, the production environment will have different
+    # credentials that are not visible in this repo
+    environment:
+      PGADMIN_DEFAULT_EMAIL: kangaroo.devplayground@gmail.com 
+      PGADMIN_DEFAULT_PASSWORD: test
+    volumes:
+       - pgadmin:/root/.pgadmin
+    ports:
+      - "8080:80"
+    networks:
+      - docker
 
 networks:
   docker:
+
+volumes:
+  postgresql:
+  pgadmin:

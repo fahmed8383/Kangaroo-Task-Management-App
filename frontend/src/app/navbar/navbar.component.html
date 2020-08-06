@@ -5,7 +5,9 @@
 
         <!--change the class to nav-inactive if mobile nav has not been clicked yet (this will hide the dropdown). The nav-active class is only defined in the mobile viewport-->
         <nav [ngClass]="showMobileNav? 'nav-active' : ''">
-        <ul class="navbarLinks">
+
+        <!--Display navbar content according to whether the user is logged in or not-->    
+        <ul *ngIf = "!isLoggedIn()" class="navbarLinks">
             <li>
                 <a href="# ">Home</a>
             </li>
@@ -22,6 +24,22 @@
                 <a (click) = "openLoginModal(); mobileNavClick();" class="navButton" style="background-color: #f5f5f5; color: black;">Login</a>
             </li>
         </ul>
+        <ul *ngIf = "isLoggedIn()" class="navbarLinks">
+            <li>
+                <a href="# ">My Planner</a>
+            </li>
+            <li>
+                <a href="# ">Public Planner</a>
+            </li>
+            <li>
+                <a href="# ">My Account</a>
+            </li>
+
+            <!--only visible in mobile-->
+            <li class="navButtonMobileLi">
+                <a (click) = "logOut()" class="navButton" style="background-color: #7957d5;">Log Out</a>
+            </li>
+        </ul>
         </nav>
         <div class="mobileMenu" id="mobileMenu">
 
@@ -31,9 +49,13 @@
         </div>
 
         <!--display:none in mobile, only visible in browser-->
-        <div class="navButtonDiv">
+        <!--Display navbar content according to whether the user is logged in or not-->
+        <div *ngIf = "!isLoggedIn()" class="navButtonDiv">
             <button (click) = "openRegModal()" class="navButton" style="background-color: #7957d5;">Register</button>
             <button (click) = "openLoginModal()" class="navButton" style="background-color: #f5f5f5; color: black;">Login</button>
+        </div>
+        <div *ngIf = "isLoggedIn()" class="navButtonDiv">
+            <button (click) = "logOut()" class="navButton" style="background-color: #7957d5;">Log Out</button>
         </div>
     </div>
 </div>
@@ -88,6 +110,7 @@
                 <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.email==''">This field is required</p>
                 <p class="dangerText" *ngIf = "regErr == 'invalid email'">Please enter a valid email address</p>
                 <p class="dangerText" *ngIf = "!emailAvailability">There is already an account registered under this email. Please log in.</p>
+                <p class="dangerText" style="color: blue;" *ngIf = "regResp == 'email sent'">New verification code email has been sent</p>
                 <button (click) = "resendEmailVerification()" class="button2">Re-send Code</button><br>
                 <label>Validation Code:</label>
                 <input type="text" [(ngModel)] = "regInfo.verificationCode"><br>
@@ -117,10 +140,36 @@
                 <label>Password:</label><br> 
                 <input type="password" [(ngModel)] = "regInfo.password"><br>
                 <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.password==''">This field is required</p>
+                <p class="dangerText" *ngIf = "regErr == 'invalid login credentials'">Invalid login credentials</p>
+                <p (click) = "displayLoginModal = false; displayPasswordResetModal = true" class="infoText" style="color: blue; cursor: pointer;">Forgot Password</p>
             </div>
         </div>
         <div class="modalFooter">
             <button (click) = "login()" class="button1">Login</button>
+        </div>
+    </div>
+</div>
+
+<!--password reset form only added to DOM when the variable for rendering it is true (modal is open)-->
+<div *ngIf = "displayPasswordResetModal" (click) = "closePasswordResetModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closePasswordResetModal($event)" class="close">&times;</span>
+            <h2>Password Reset</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <p class="infoText">Please enter the email under which your account is registered</p>
+                <label>Email:</label><br> 
+                <input type="text" [(ngModel)] = "regInfo.email"><br>
+                <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.email==''">This field is required</p>
+                <p class="dangerText" *ngIf = "regErr == 'invalid email'">Please enter a valid email address</p>
+                <p class="dangerText" *ngIf = "regErr == 'Unable to send email reset request'">Unable to send email reset request</p>
+                <p class="dangerText" style="color: blue;" *ngIf = "regResp == 'Password reset link has been sent to your email address'">Password reset link has been sent to your email address</p>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "passwordReset()" class="button1">Submit</button>
         </div>
     </div>
 </div>

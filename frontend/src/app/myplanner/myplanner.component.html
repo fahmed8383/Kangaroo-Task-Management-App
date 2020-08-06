@@ -1,0 +1,215 @@
+<div class="paralax">    
+</div>
+
+<div *ngIf = "displaySidebar" (click) = "closeModal($event)" class="modal">
+    <div class="sidebar">
+        <span (click) = "closeModal($event)" class="close2">&times;</span>
+        <div class="buttons">
+            <button (click) = "openTopicModal()" class="button3">Add Topic</button>
+            <button (click) = "editTopics()" class="button3">Edit Topics</button>
+            <div class="form1">
+                <label>Sort Method:</label><br>
+                <select (change) = "setSortingMethod()" [(ngModel)] = "sortingMethod">
+                    <option value="desc-due">Due Date: Desc</option>
+                    <option value="asc-due">Due Date: Asc</option>
+                    <option value="desc-created">Created Date: Desc</option>
+                    <option value="asc-created">Created Date: Asc</option>
+                </select><br><br>
+                <input (change) = "changeDisplayCompleted()" type="checkbox" [(ngModel)] = "displayCompleted"> Display Completed<br>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf = "!displaySidebar&&!editTopic" (click) = "openSidebar()" class="sideBarIcon">
+    <fa-icon [icon]="arrowRight"></fa-icon>
+</div>
+
+<div *ngIf = "editTopic" (click) = "saveTopics()" class="saveIcon">
+    <a>Save</a>
+</div>
+
+<div class="topics">
+    <!--loops through user schedule array for each topic-->
+    <div *ngFor = "let topic of getSchedule(); index as i" class="card">
+
+        <!--display different header depending on whether editTopic is on or not-->
+        <div *ngIf = "!editTopic" class="cardHeader"><h1>{{topic.title}}</h1></div>
+        <div *ngIf = "editTopic" class="cardHeader">
+            <span (click) = "openDeleteTopicModal(i)" class="close2" style="color: white;">&times;</span>
+            <div class="row">
+                <div (click) = "moveTopicLeft(i)" class="column" style="width: 11%; text-align: right; font-size: 25px; margin-top: 17px; cursor: pointer;"><fa-icon [icon]="chevLeft"></fa-icon></div>
+                <div class="column" style="width: 70%; text-align: center;">
+                    <input type="text" [(ngModel)] = "topic.title">
+                </div>
+                <div (click) = "moveTopicRight(i)" class="column" style="width: 11%; text-align: left; font-size: 25px; margin-top: 17px; cursor: pointer;"><fa-icon [icon]="chevRight"></fa-icon></div>
+            </div>
+        </div>
+
+        <!--loops through each task for the specific topic-->
+        <div *ngFor = "let task of topic.tasks; index as j" [hidden]="task.status=='completed'&&!displayCompleted" (click) = "openTaskInfoModal(i, j)" class="cardTask" [ngStyle] = "{'background-color': getBackgroundColor(task)}">
+            <div class="row" style=" display: flex; align-items: center;">
+                <div class="column" style="width: 80%;">
+                    <p class="name">{{task.title}}</p>
+                    <p *ngIf = "task.dueDate" class="date">Due: {{task.dueDate}}</p>
+                </div>
+                <div *ngIf = "task.type == 'subtasks'" class="column" style="width: 20%;"><circle-progress
+                    [percent]="task.progress"
+                ></circle-progress></div>
+            </div>
+        </div>
+
+        <!--empty card at the end of each topic to add more tasks-->
+        <div (click) = "openTaskModal(i)" class="emptyCardTask">
+            <fa-icon [icon]="faPlus"></fa-icon>
+        </div>
+    </div>
+
+    <!--adds an artificial space at the end of scroll on flexbox-->
+    <div class="finalCardSpacer"></div>
+</div>
+
+<div *ngIf = "displayTopicModal" (click) = "closeModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeModal($event)" class="close">&times;</span>
+            <h2>Add Topic</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <label>Topic Name:</label><br>
+                <input type="text" [(ngModel)] = "topicTemp.title"><br>
+                <p class="dangerText" *ngIf = "apiErr == 'missing field'&&topicTemp.title==''">This field is required</p> 
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "addTopic()" class="button1">Submit</button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf = "displayDeleteTopicModal" (click) = "closeModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeModal($event)" class="close">&times;</span>
+            <h2>Delete Topic</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <p class="infoText">Are you sure wish to delete this topic, this action will not be reversible</p> 
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "deleteTopic()" class="button1">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf = "displayTaskModal" (click) = "closeModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeModal($event)" class="close">&times;</span>
+            <h2>Add Task</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <label>Task Name:</label><br>
+                <input type="text" [(ngModel)] = "taskTemp.title"><br>
+                <p class="dangerText" *ngIf = "apiErr == 'missing field'&&taskTemp.title==''">This field is required</p>
+                <label>Description (optional):</label><br>
+                <textarea [(ngModel)] = "taskTemp.description"></textarea><br>
+                <label>Type:</label><br>
+                <select [(ngModel)] = "taskTemp.type">
+                    <option value="checkbox">Checkbox</option>
+                    <option value="subtasks">Subtasks</option>
+                </select><br>
+                <p class="dangerText" *ngIf = "apiErr == 'missing field'&&taskTemp.type==''">This field is required</p>
+                <label>Due Date (optional):</label><br>
+                <input type="date" [(ngModel)] = "taskTemp.dueDate"><br>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "addTask()" class="button1">Submit</button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf = "displayTaskInfoModal" (click) = "closeModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeModal($event)" class="close">&times;</span>
+            <h2>{{getSchedule()[tempI].tasks[tempJ].title}}</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <div class="row">
+                    <div class="column" style="width: 70%;">
+                        <label>Status:</label><br>
+                        <select [(ngModel)] = "getSchedule()[tempI].tasks[tempJ].status">
+                            <option value="incomplete">Incomplete</option>
+                            <option value="completed">Completed</option>
+                            <option value="onHold">On Hold</option>
+                        </select><br>
+                    </div>
+                    <div class="column" style="width: 30%; padding-top: 35px;">
+                        <div class="dropdown" style="float: right;">
+                            <fa-icon style="font-size: 20px; border: transparent solid 15px;" [icon]="arrowDown"></fa-icon>
+                            <div class="dropdown-content">
+                                <a (click) = "openTaskEditModal()">Edit</a>
+                                <a (click) = "deleteTask()">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf = "getSchedule()[tempI].tasks[tempJ].description">
+                    <label>Description:</label><br>
+                    <textarea style="height: 100px; resize: none;" readonly>{{getSchedule()[tempI].tasks[tempJ].description}}</textarea>
+                </div>
+                <div *ngIf = "getSchedule()[tempI].tasks[tempJ].type == 'subtasks'">
+                    <label>Subtasks:</label><br>
+                    <div class="subtasksDiv">
+                        <div *ngFor = "let subtask of getSchedule()[tempI].tasks[tempJ].subTasks; index as k" class="subtasks">
+                            <div><input (change) = "calculateProgress()" type="checkbox" [(ngModel)] = "subtask.status">{{subtask.title}}<br></div>
+                            <fa-icon (click) = "deleteSubtask(k)" style="font-size: 17px; margin-right: 10px; cursor: pointer;" [icon]="faTrash"></fa-icon>
+                        </div>
+                    </div>
+                    <div class="addSubtasks">
+                        <input [(ngModel)] = "subTaskTemp.title"><button (click) = "addSubTask()" class="button2" style="margin-top: 0;">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <div style="height: 28px;"></div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf = "displayTaskEditModal" (click) = "closeModal($event)" class="modal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <span (click) = "closeModal($event)" class="close">&times;</span>
+            <h2>Edit Task</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <label>Task Name:</label><br>
+                <input type="text" [(ngModel)] = "getSchedule()[tempI].tasks[tempJ].title"><br>
+                <p class="dangerText" *ngIf = "apiErr == 'missing field'&&taskTemp.title==''">This field is required</p>
+                <label>Description (optional):</label><br>
+                <textarea [(ngModel)] = "getSchedule()[tempI].tasks[tempJ].description"></textarea><br>
+                <label>Type:</label><br>
+                <select [(ngModel)] = "getSchedule()[tempI].tasks[tempJ].type">
+                    <option value="checkbox">Checkbox</option>
+                    <option value="subtasks">Subtasks</option>
+                </select><br>
+                <p class="dangerText" *ngIf = "apiErr == 'missing field'&&taskTemp.type==''">This field is required</p>
+                <label>Due Date (optional):</label><br>
+                <input type="date" [(ngModel)] = "getSchedule()[tempI].tasks[tempJ].dueDate"><br>
+            </div>
+        </div>
+        <div class="modalFooter">
+            <button (click) = "saveTask()" class="button1">Save</button>
+        </div>
+    </div>
+</div>

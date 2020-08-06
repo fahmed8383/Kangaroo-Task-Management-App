@@ -15,7 +15,7 @@ func ValidateVerificationCode(w http.ResponseWriter, r *http.Request, ess *setup
 	if r.Method != "POST" {
 		ess.Log.Error("method not POST request")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -24,7 +24,7 @@ func ValidateVerificationCode(w http.ResponseWriter, r *http.Request, ess *setup
 	if err != nil {
 		ess.Log.Error("cannot read request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -33,7 +33,7 @@ func ValidateVerificationCode(w http.ResponseWriter, r *http.Request, ess *setup
 	if err != nil {
 		ess.Log.Error("cannot parse request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -44,7 +44,7 @@ func ValidateVerificationCode(w http.ResponseWriter, r *http.Request, ess *setup
 	if err != nil {
 		ess.Log.Error("unable to query for token ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -52,7 +52,7 @@ func ValidateVerificationCode(w http.ResponseWriter, r *http.Request, ess *setup
 	if token != dataStruct.VerificationCode {
 		ess.Log.Error("verification code is incorrect ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -62,7 +62,7 @@ func ValidateVerificationCode(w http.ResponseWriter, r *http.Request, ess *setup
 	if err != nil {
 		ess.Log.Error("unable to update verification status for user ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 

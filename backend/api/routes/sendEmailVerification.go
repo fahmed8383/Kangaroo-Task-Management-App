@@ -19,7 +19,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if r.Method != "POST" {
 		ess.Log.Error("method not POST request")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -28,7 +28,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("cannot read request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -37,7 +37,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("cannot parse request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -45,7 +45,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if dataStruct.Username == "" || dataStruct.Email == "" || dataStruct.Password == "" {
 		ess.Log.Error("missing fields ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -64,7 +64,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("unable to generate http request to verify recaptcha ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -73,7 +73,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("unable to send http request to verify recaptcha ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 	defer res.Body.Close()
@@ -83,7 +83,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("unable to read body from recaptcha response ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -92,7 +92,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("unable to parse body from recaptcha response ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -102,7 +102,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if recaptchaResp.Success != true {
 		ess.Log.Error("recaptcha failed ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -114,7 +114,7 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("unable to send verification code email ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -123,17 +123,17 @@ func SendEmailVerification(w http.ResponseWriter, r *http.Request, ess *setup.Es
 	if err != nil {
 		ess.Log.Error("unable to encrypt password ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
 	// insert user data into the database, use variables so sql driver can escape all user entered info
-	sql := `INSERT INTO app.users (username, email, password, verified) VALUES ($1, $2, $3, $4)`
-	_, err = ess.PG.Exec(sql, dataStruct.Username, dataStruct.Email, encrypted, token)
+	sql := `INSERT INTO app.users (username, email, password, verified, schedule, sorting) VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err = ess.PG.Exec(sql, dataStruct.Username, dataStruct.Email, encrypted, token, `[]`, "desc-due")
 	if err != nil {
 		ess.Log.Error("unable to add data to table ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 

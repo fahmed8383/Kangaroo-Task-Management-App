@@ -16,7 +16,7 @@ func CheckUsernameAvailability(w http.ResponseWriter, r *http.Request, ess *setu
 	if r.Method != "POST" {
 		ess.Log.Error("method not POST request")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -25,7 +25,7 @@ func CheckUsernameAvailability(w http.ResponseWriter, r *http.Request, ess *setu
 	if err != nil {
 		ess.Log.Error("cannot read request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -34,7 +34,7 @@ func CheckUsernameAvailability(w http.ResponseWriter, r *http.Request, ess *setu
 	if err != nil {
 		ess.Log.Error("cannot parse request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -45,7 +45,7 @@ func CheckUsernameAvailability(w http.ResponseWriter, r *http.Request, ess *setu
 	if err != nil {
 		ess.Log.Error("unable to query for username ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 

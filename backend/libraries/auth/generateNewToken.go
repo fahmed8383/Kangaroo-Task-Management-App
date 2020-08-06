@@ -15,3 +15,14 @@ func GenerateToken(size int) string {
 	}
 	return string(b)
 }
+
+// GenerateURLFriendlyToken creates a random url friendly token that can be used for various forms of authorizations
+func GenerateURLFriendlyToken(size int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@$&")
+	rand.Seed(time.Now().Unix())
+	b := make([]rune, size)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}

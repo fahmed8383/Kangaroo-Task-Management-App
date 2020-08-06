@@ -64,6 +64,30 @@ func main() {
 		routes.Login(w, r, ess, secrets)
 	})
 
+	// registers /api/logout
+	http.HandleFunc("/api/logout", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.LogOut(w, r, ess, secrets)
+	})
+
+	// registers /api/send-password-reset-email
+	http.HandleFunc("/api/send-password-reset-email", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.SendPasswordResetEmail(w, r, ess, secrets)
+	})
+
+	// registers /api/reset-user-password
+	http.HandleFunc("/api/reset-user-password", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.ResetUserPassword(w, r, ess, secrets)
+	})
+
+	// registers /api/my-schedule
+	http.HandleFunc("/api/my-schedule", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.MySchedule(w, r, ess, secrets)
+	})
+
 	//-----------------------------------------------------------------------------------------------------------------------------
 
 	// start the  http server
@@ -86,7 +110,10 @@ func SetUpDBStructure(ess *setup.Essentials) {
 		username TEXT UNIQUE NOT NULL PRIMARY KEY,
 		email TEXT UNIQUE NOT NULL,
 		password BYTEA NOT NULL,
-		verified TEXT NOT NULL
+		verified TEXT NOT NULL,
+		token TEXT,
+		schedule json NOT NULL,
+		sorting TEXT NOT NULL
 	)`)
 	if err != nil {
 		ess.Log.Error("unable to create users table for database ", err)

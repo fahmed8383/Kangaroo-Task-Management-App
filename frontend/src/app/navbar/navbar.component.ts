@@ -1,6 +1,8 @@
 import { Component, HostListener, OnInit } from '@angular/core';
+import { MainService } from '../main.service';
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -25,6 +27,7 @@ export class NavbarComponent implements OnInit {
   displayRegModal: boolean = false;
   displayVerificationModal: boolean = false;
   displayLoginModal: boolean = false;
+  displayPasswordResetModal: boolean = false;
 
   // holds the registration info
   regInfo = {
@@ -59,6 +62,10 @@ export class NavbarComponent implements OnInit {
   @HostListener("window:scroll", [])
   onWindowScroll() {
 
+    if(window.location.pathname!='/'){
+      return
+    }
+
     const number = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     if (number > 100) {
       this.navbarTransparent = false;
@@ -71,6 +78,9 @@ export class NavbarComponent implements OnInit {
   // displays the modals and turns scrolling off
   openRegModal(){
     this.regErr = "";
+    this.regResp = "";
+    this.usernameAvailability = true;
+    this.emailAvailability = true;
     this.displayRegModal = true;
     document.body.style.overflow = 'hidden';
   }
@@ -100,6 +110,21 @@ export class NavbarComponent implements OnInit {
   closeLoginModal(e){
     if(e.target.className == "modal" || e.target.className == "close"){
       this.displayLoginModal = false;
+      document.body.style.overflow = 'auto';
+      this.regInfo = {
+        userName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        captcha: "",
+        verificationCode: "" 
+      }
+    }
+  }
+
+  closePasswordResetModal(e){
+    if(e.target.className == "modal" || e.target.className == "close"){
+      this.displayPasswordResetModal = false;
       document.body.style.overflow = 'auto';
       this.regInfo = {
         userName: "",
@@ -208,6 +233,9 @@ export class NavbarComponent implements OnInit {
         return response.json();
       })
       .then((data)=>{
+        if(data.msg == "success"){
+          this.regResp = "email sent"
+        }
       }) 
       .catch(err => {
         console.log(err);
@@ -244,16 +272,13 @@ export class NavbarComponent implements OnInit {
       // if successful, close the modal and reset the form
       if(data.msg == "success"){
         this.regErr = "";
+
+        // login after registration
+        this.login();
+
         this.displayVerificationModal = false;
         document.body.style.overflow = 'auto';
-        this.regInfo = {
-          userName: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          captcha: "",
-          verificationCode: "" 
-        }
+        
       }
       else{
         this.regErr = "invalid authorization code";
@@ -318,6 +343,7 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  // logs user in, sets service variables for loggedin
   login(){
 
     // checks that all required fields and the captcha are filled before sending request to backend
@@ -336,7 +362,21 @@ export class NavbarComponent implements OnInit {
     })
     .then((data)=>{
       if(data.msg == "success"){
+        // set loggedIn value to true through the application
+        this._mainservice.loggedIn = true
+
+        this.displayLoginModal = false
         this.regErr = ""
+        this.regInfo = {
+          userName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          captcha: "",
+          verificationCode: "" 
+        }
+
+        this.router.navigate(['my-planner']);
       }
       else{
         this.regErr = "invalid login credentials"
@@ -347,9 +387,91 @@ export class NavbarComponent implements OnInit {
     });
   }
 
-  constructor() { }
+  // logs user out, sets service variables for logged in to false
+  logOut(){
+    // send request to backend
+    fetch("/api/logout", {
+      method: "post",
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then((data)=>{
+      if(data.msg == "success"){
+        // set loggedIn value to false through the application
+        this._mainservice.loggedIn = false
+        this.router.navigate(['/']);
+      }
+    }) 
+    .catch(err => {
+      console.log(err);
+    });
+  }
+
+  // sends request to backend to send password reset token in email
+  passwordReset(){
+
+    // checks that all required fields and the captcha are filled before sending request to backend
+    if(this.regInfo.email == ""){
+      this.regErr = "missing field";
+      return
+    }
+    // check if the entered email is a valid email format
+    if(!this.validateEmail(this.regInfo.email)){
+      this.regErr = "invalid email";
+      return
+    }
+
+    // send request to backend
+    fetch("/api/send-password-reset-email", {
+      method: "post",
+      body: JSON.stringify(this.regInfo),
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then((data)=>{
+      if(data.msg == "success"){
+        this.regErr = ""
+        this.regResp = "Password reset link has been sent to your email address"
+      }
+      else{
+        this.regErr = "Unable to send email reset request"
+      }
+    }) 
+    .catch(err => {
+      console.log(err);
+    });
+  }
+
+  // returns logged in status
+  // this service variable is set in navbar.component.ts and is triggered on oninit, login and logout functions
+  isLoggedIn(){
+    return this._mainservice.loggedIn
+  }
+
+  // create main service instance
+  constructor(private _mainservice: MainService, private router: Router) { }
 
   ngOnInit(): void {
+
+    // only make navbar transparent on home page
+    if(window.location.pathname!='/'){
+      this.navbarTransparent = false;
+    }
+    else{
+      this.navbarTransparent = true;
+    }
+
+    // check if user is logged in by checking if cookie exists
+    // aside from the app component this navbar is the only component that loads on
+    // every page, thus it would be best to implement this method here
+    if(this._mainservice.cookieExists("sessionid")){
+      this._mainservice.loggedIn = true
+    }
+    else{
+      this._mainservice.loggedIn = false
+    }
   }
 
 }

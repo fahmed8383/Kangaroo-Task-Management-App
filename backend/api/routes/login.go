@@ -16,7 +16,7 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if r.Method != "POST" {
 		ess.Log.Error("method not POST request")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -25,7 +25,16 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if err != nil {
 		ess.Log.Error("cannot read request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
+		return
+	}
+
+	// check to make sure the logged in cookie is not already present
+	_, err = r.Cookie("jwt")
+	if err != http.ErrNoCookie {
+		ess.Log.Error("jwt cookie already present, user still logged in ")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -34,7 +43,7 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if err != nil {
 		ess.Log.Error("cannot parse request body ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -45,7 +54,7 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if err != nil {
 		ess.Log.Error("unable to query for username ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -54,7 +63,7 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if err != nil {
 		ess.Log.Error("unable to decrypt password ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -62,16 +71,16 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if dataStruct.Password != password {
 		ess.Log.Error("password is incorrect ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
 	// generate a valid jwt token for the user
-	token, err := auth.GenerateJwt(dataStruct, secrets.Jwt)
+	token, err := auth.GenerateJwt(dataStruct.Username, secrets.Jwt)
 	if err != nil {
 		ess.Log.Error("unable to generate jwt token ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
@@ -89,28 +98,34 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	if err != nil {
 		ess.Log.Error("unable to add data to jwt table ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		w.Write([]byte(`{"msg":"failure"}`))
 		return
 	}
 
 	// creates a jwt cookie for the user
-	cookie := http.Cookie{
+	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    token,
 		Path:     "/",
-		MaxAge:   604800, // max age of a week
+		MaxAge:   2147483647, // virtually infinite cookie
 		HttpOnly: true,
-	}
-	http.SetCookie(w, &cookie)
+	})
 
 	// create a session id cookie for the user
-	cookie = http.Cookie{
+	http.SetCookie(w, &http.Cookie{
 		Name:   "sessionid",
 		Value:  sessionid,
 		Path:   "/",
-		MaxAge: 604800, // max age of a week
-	}
-	http.SetCookie(w, &cookie)
+		MaxAge: 2147483647, // virtually infinite cookie
+	})
+
+	// create a username cookie for the user
+	http.SetCookie(w, &http.Cookie{
+		Name:   "username",
+		Value:  dataStruct.Username,
+		Path:   "/",
+		MaxAge: 2147483647, // virtually infinite cookie
+	})
 
 	w.Write([]byte(`{"msg":"success"}`))
 	return

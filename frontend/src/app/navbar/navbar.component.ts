@@ -21,7 +21,7 @@ export class NavbarComponent implements OnInit {
   showMobileNav: boolean = false;
 
   // determines the transparency of the navbar
-  navbarTransparent: boolean = true;
+  navbarTransparent: boolean = false;
 
   // determines whether the modals connected to the navbar should be displayed or not
   displayRegModal: boolean = false;
@@ -73,6 +73,15 @@ export class NavbarComponent implements OnInit {
       this.navbarTransparent = true;
     }
 
+  }
+
+  // smooth scroll to same page anchor
+  scrollToElement(elId): void {
+    // if not on home page go to the page at the tag instead
+    if(window.location.pathname!='/'){
+      location.href = "/#"+elId;
+    }
+    document.getElementById(elId).scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
   }
 
   // displays the modals and turns scrolling off

@@ -136,7 +136,7 @@ div::-webkit-scrollbar:vertical {
     width: 300px;
     max-width: 60vw;
     position: fixed;
-    z-index: 1;
+    z-index: 3;
     top: 0;
     left: 0;
     background-color: #e1e1e1;
@@ -158,7 +158,7 @@ div::-webkit-scrollbar:vertical {
     font-size: 30px;
     transition: all 0.3s ease 0s;
     cursor: pointer;
-    z-index: 2;
+    z-index: 1;
 }
 
 .sideBarIcon fa-icon {

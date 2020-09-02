@@ -88,6 +88,24 @@ func main() {
 		routes.MySchedule(w, r, ess, secrets)
 	})
 
+	// registers /api/get-user-info
+	http.HandleFunc("/api/get-user-info", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.GetUserInfo(w, r, ess, secrets)
+	})
+
+	// registers /api/reset-email
+	http.HandleFunc("/api/reset-email", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.ResetEmail(w, r, ess, secrets)
+	})
+
+	// registers /api/reset-loggedin-password
+	http.HandleFunc("/api/reset-loggedin-password", func(w http.ResponseWriter, r *http.Request) {
+		ess.Log.Debugf("%s request on %s", r.Method, r.RequestURI)
+		routes.ResetLoggedinPassword(w, r, ess, secrets)
+	})
+
 	//-----------------------------------------------------------------------------------------------------------------------------
 
 	// start the  http server

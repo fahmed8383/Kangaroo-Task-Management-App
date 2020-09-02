@@ -1,0 +1,46 @@
+<div class="paralax">
+</div>
+
+<div class="backgroundModal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <h2>My Account</h2>
+        </div>
+        <div class="modalBody">
+            <div class="form1">
+                <label>Username:</label><br>
+                <input type="text" value="test" disabled style="background-color: #e6e6e6; width: 80%;"><br>
+
+                <label>Email:</label><br>
+                <div *ngIf = "!editEmail">
+                    <input type="email" [(ngModel)] = "regInfo.email" disabled style="background-color: #e6e6e6; width: 80%;">
+                    <fa-icon (click) = "editEmail = true;" style="font-size: 25px; margin-left: 10px; cursor: pointer;" [icon]="faEdit"></fa-icon>
+                </div>
+                <div *ngIf = "editEmail">
+                    <input type="email" (focusout) = "checkEmailAvailability()" [(ngModel)] = "regInfo.email" style="width: 80%;">
+                    <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.email==''">This field is required</p>
+                    <p class="dangerText" *ngIf = "regErr == 'invalid email'">Please enter a valid email address</p>
+                    <p class="dangerText" *ngIf = "!emailAvailability">There is already an account registered under this email. Please log in.</p>
+                    <button (click) = "resetEmail()" class="button2">Save Email</button>
+                </div>
+
+                <div *ngIf = "!editPassword">
+                    <label>Password:</label><br> 
+                    <button (click) = "editPassword = true;" class="button2">Edit Password</button>
+                </div>
+                <div *ngIf = "editPassword">
+                    <label>New Password:</label><br> 
+                    <input type="password" [(ngModel)] = "regInfo.password" style="width: 80%;">
+                    <p class="dangerText" *ngIf = "regErr == 'missing field'&&regInfo.password==''">This field is required</p>
+                    <label>Confirm Password:</label><br> 
+                    <input type="password" [(ngModel)] = "regInfo.confirmPassword" style="width: 80%;">
+                    <p class="dangerText" *ngIf = "regInfo.confirmPassword!=regInfo.password">Passwords do not match</p>
+                    <button (click) = "resetPassword()" class="button2">Save Password</button>
+                </div>
+
+            </div>
+        </div>
+        <div class="modalFooter">
+        </div>
+    </div>
+</div>

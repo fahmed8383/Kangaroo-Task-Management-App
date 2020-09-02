@@ -17,3 +17,10 @@ func ParseRegInfo(data []byte) (RegInfo, error) {
 	err := json.Unmarshal(data, &info)
 	return info, err
 }
+
+// SetUserInfo repacks username and email into RegInfo struct and marshalls them into bytes
+func SetUserInfo(username string, email string) ([]byte, error) {
+	response := RegInfo{username, email, "", "", ""}
+	res, err := json.Marshal(response)
+	return res, err
+}

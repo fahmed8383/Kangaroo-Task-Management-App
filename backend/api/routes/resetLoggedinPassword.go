@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
@@ -10,11 +9,11 @@ import (
 	"github.com/fahmed8383/SchedulingApp/libraries/setup"
 )
 
-// MySchedule is responsible for saving and retreiving the user schedule and sorting method from the database
-func MySchedule(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secrets *setup.Secrets) {
+// ResetLoggedinPassword is responsible for saving new password for user in database
+func ResetLoggedinPassword(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secrets *setup.Secrets) {
 
 	// check to make sure jwt is valid
-	if r.Method == "POST" || r.Method == "GET" {
+	if r.Method == "POST" {
 
 		// check to make sure the logged in cookies are present.
 		jwtCookie, err := r.Cookie("jwt")
@@ -150,7 +149,7 @@ func MySchedule(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, s
 
 	}
 
-	// if method is post, save the schedule in the database
+	// if method is post, save the new password in the database
 	if r.Method == "POST" {
 
 		// read request body
@@ -163,7 +162,7 @@ func MySchedule(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, s
 		}
 
 		// returns the parsed request
-		dataStruct, err := api.ParseScheduleInfo(body)
+		dataStruct, err := api.ParseRegInfo(body)
 		if err != nil {
 			ess.Log.Error("cannot parse request body ", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -180,11 +179,20 @@ func MySchedule(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, s
 			return
 		}
 
-		// update schedule and sorting method for the user in the database
-		sql := `UPDATE app.users SET schedule = $1, sorting = $2 WHERE username = $3;`
-		_, err = ess.PG.Exec(sql, dataStruct.Schedule, dataStruct.SortingMethod, usernameCookie.Value)
+		// encrypt the password before storing in database
+		encrypted, err := api.Encrypt(secrets.Key, dataStruct.Password)
 		if err != nil {
-			ess.Log.Error("unable to schedule for user ", err)
+			ess.Log.Error("unable to encrypt password ", err)
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"msg":"failure"}`))
+			return
+		}
+
+		// update password for the user in the database
+		sql := `UPDATE app.users SET password = $1 WHERE username = $2;`
+		_, err = ess.PG.Exec(sql, encrypted, usernameCookie.Value)
+		if err != nil {
+			ess.Log.Error("unable to update email for user ", err)
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"msg":"failure"}`))
 			return
@@ -194,44 +202,7 @@ func MySchedule(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, s
 		return
 	}
 
-	// if method is get, get the schedule for the frontend
-	if r.Method == "GET" {
-
-		// gets username cookie from frontend
-		usernameCookie, err := r.Cookie("username")
-		if err != nil {
-			ess.Log.Error("username cookie missing ")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg":"failure"}`))
-			return
-		}
-
-		// queries for the schedule and sorting method of the specific user
-		var schedule json.RawMessage
-		var sorting string
-		sql := `SELECT schedule, sorting FROM app.users WHERE username = $1;`
-		err = ess.PG.QueryRow(sql, usernameCookie.Value).Scan(&schedule, &sorting)
-		if err != nil {
-			ess.Log.Error("unable to query for schedule and sorting method ", err)
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg":"failure"}`))
-			return
-		}
-
-		// create response for frontend
-		res, err := api.SetScheduleResponse(schedule, sorting)
-		if err != nil {
-			ess.Log.Error("unable to create response to send schedule to frontend ", err)
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg":"failure"}`))
-			return
-		}
-
-		w.Write(res)
-		return
-	}
-
-	ess.Log.Error("method not POST or GET")
+	ess.Log.Error("method not POST")
 	w.WriteHeader(http.StatusBadRequest)
 	w.Write([]byte(`{"msg":"failure"}`))
 	return

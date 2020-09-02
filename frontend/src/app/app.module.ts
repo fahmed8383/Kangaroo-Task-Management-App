@@ -13,6 +13,7 @@ import { HomeComponent } from './home/home.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { MainService } from './main.service';
 import { MyplannerComponent } from './myplanner/myplanner.component';
+import { MyaccountComponent } from './myaccount/myaccount.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { MyplannerComponent } from './myplanner/myplanner.component';
     NavbarComponent,
     HomeComponent,
     PasswordResetComponent,
-    MyplannerComponent
+    MyplannerComponent,
+    MyaccountComponent
   ],
   imports: [
     BrowserModule,

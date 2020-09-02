@@ -1,10 +1,35 @@
-<div class="paralax">
+<div id="start" class="paralax">
     <div class="titlecontent">
         <h1>Kangaroo</h1>
-        <h2>Scheduling and Objective Tracking for Students</h2>
+        <h2>Scheduling and Objective Tracking Simplified</h2>
+        <br>
+        <a href="/demo" class="demoButton">View The Demo</a>
     </div>
 </div>
-<div class="features">
+<div id="features" class="features">
     <h1>Features</h1>
-    <p></p>
+    <p>Kangaroo is an objective tracking app focused on a simple UI to track tasks and deadline. It supports the ability to add subtasks and display progress for each subtask, as well as manually mark tasks as complete, incomplete or on hold.</p>
+    <br>
+    <div class="carousel">
+
+        <div class="slide">
+            <img [src]="carousel[currentSlide].img" style="width:100%">
+
+            <div style="text-align:center" class="caption">
+                <div>{{carousel[currentSlide].caption}}</div>
+                <div *ngFor = "let item of carousel; let i = index" style="display: inline-block;">
+                    <span [ngStyle]="{'background-color': currentSlide == i ? '#808080' : '' }" class="dot"></span> 
+                </div>
+            </div>
+        </div>
+        
+        <a (click) = "prevSlide()" class="prev">&#10094;</a>
+        <a (click) = "nextSlide()" class="next">&#10095;</a>
+        
+    </div>
+</div>
+<div id="about" class="features">
+    <h1>About</h1>
+    <p>Kangaroo is an open source project created by <a target="_blank" href="https://www.linkedin.com/in/faiq-ahmed-0b0345170/">Faiq Ahmed</a>, an undergraduate software engineering student at Mcmaster University with interests in DevOps and machine learning. This project was developed using angular, golang, postgresql, and nginx. The source code for the project can be found <a target="_blank" href="https://www.linkedin.com/in/faiq-ahmed-0b0345170/">here</a>.</p>
+    <br>
 </div>

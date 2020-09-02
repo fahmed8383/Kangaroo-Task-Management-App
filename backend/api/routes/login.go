@@ -92,7 +92,7 @@ func Login(w http.ResponseWriter, r *http.Request, ess *setup.Essentials, secret
 	// this is used as a subtitute for refresh token, when a token is expired the database will be checked for previous
 	// valid token before sending out a new token, if token is invalid it will log the user out user from that session.
 
-	// this will only trigger if the refresh token has been compromised, thus it will send me an email so I am aware.
+	// this will only trigger if the refresh token has been compromised.
 	sql = `INSERT INTO app.login (username, sessionid, jwt) VALUES ($1, $2, $3);`
 	_, err = ess.PG.Exec(sql, dataStruct.Username, sessionid, token)
 	if err != nil {

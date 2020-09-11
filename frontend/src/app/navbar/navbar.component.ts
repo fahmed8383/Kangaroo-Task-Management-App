@@ -204,7 +204,7 @@ export class NavbarComponent implements OnInit {
       })
       .then((data)=>{
         // if succesful, close the modal and open the email verification modal
-        if(data.msg = "success"){
+        if(data.msg == "success"){
           this.displayRegModal = false;
           this.displayVerificationModal = true;
         }

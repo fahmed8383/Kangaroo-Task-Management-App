@@ -385,6 +385,8 @@ export class NavbarComponent implements OnInit {
           verificationCode: "" 
         }
 
+        this.navbarTransparent = false;
+
         this.router.navigate(['my-planner']);
       }
       else{
@@ -407,8 +409,15 @@ export class NavbarComponent implements OnInit {
     })
     .then((data)=>{
       if(data.msg == "success"){
+
+        this.displayVerificationModal = false;
+        document.body.style.overflow = 'auto';
+
         // set loggedIn value to false through the application
         this._mainservice.loggedIn = false
+
+        this.navbarTransparent = false;
+        
         this.router.navigate(['/']);
       }
     }) 
